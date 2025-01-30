@@ -42,10 +42,10 @@ def deploy(environment) {
         println "Environment not valid"
         System.exit(0)
     }
-
-    bat """
-	for /f "tokens=*" %i in ('docker ps -f "name=app_dev" -q') do docker stop %i
-	for /f "tokens=*" %i in ('docker ps -a -f "name=app_dev" -q') do docker rm %i
-    docker run -d -p ${port}:5000 --name ${containerName} hands-on-jenkins/myapp:%BUILD_NUMBER%
-    """
+	
+	bat """
+	for /f %%i in ('docker ps -f "name=app_dev" -q') do docker stop %%i
+	for /f %%i in ('docker ps -a -f "name=app_dev" -q') do docker rm %%i
+   	docker run -d -p ${port}:5000 --name ${containerName} hands-on-jenkins/myapp:%BUILD_NUMBER%
+   	 """
 }
