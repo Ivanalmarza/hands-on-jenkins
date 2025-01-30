@@ -1,0 +1,51 @@
+#!/usr/bin/groovy
+
+pipeline {
+    agent any
+
+    options {
+        disableConcurrentBuilds()
+    }
+
+    stages {
+
+        stage("Build") {
+            steps { buildApp() }
+        }
+
+        stage("Deploy - Dev") {
+            steps { deploy('dev') }
+        }
+
+    }
+}
+
+// steps
+def buildApp() {
+    dir('section_4/code/cd_pipeline') {
+        bat """
+        docker build -t hands-on-jenkins/myapp:%BUILD_NUMBER% .
+        """
+    }
+}
+
+def deploy(environment) {
+
+    def containerName = ''
+    def port = ''
+
+    if ("${environment}" == 'dev') {
+        containerName = "app_dev"
+        port = "8888"
+    } 
+    else {
+        println "Environment not valid"
+        System.exit(0)
+    }
+
+    bat """
+	for /f "tokens=*" %i in ('docker ps -f "name=app_dev" -q') do docker stop %i
+	for /f "tokens=*" %i in ('docker ps -a -f "name=app_dev" -q') do docker rm %i
+    docker run -d -p ${port}:5000 --name ${containerName} hands-on-jenkins/myapp:%BUILD_NUMBER%
+    """
+}
